@@ -9,16 +9,10 @@ class Camera extends Model
 {
     use HasFactory;
 
-    protected $fillable = [
-        'marca',
-        'modelo',
-        'resolucao',
-        'preco'
-    ];
+   protected $fillable = ['marca','modelo','resolucao','preco'];
 
-
-    public function memoryCards()
-    {
-        return $this->belongsToMany(MemoryCard::class);
-    }
+public function memoryCards()
+{
+    return $this->belongsToMany(MemoryCard::class);
+}
 }
