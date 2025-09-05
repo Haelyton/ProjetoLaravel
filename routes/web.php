@@ -1,20 +1,24 @@
 <?php
 
-use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Api\CameraController;
+use App\Http\Controllers\Api\MemoryCardController;
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/cameras', [CameraController::class, 'index']);
+Route::get('/cameras/{camera}', [CameraController::class, 'show']);
+
+Route::get('/memory-cards', [MemoryCardController::class, 'index']);
+Route::get('/memory-cards/{memoryCard}', [MemoryCardController::class, 'show']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/cameras', [CameraController::class, 'store']);
+    Route::put('/cameras/{camera}', [CameraController::class, 'update']);
+    Route::delete('/cameras/{camera}', [CameraController::class, 'destroy']);
+
+    Route::post('/memory-cards', [MemoryCardController::class, 'store']);
+    Route::put('/memory-cards/{memoryCard}', [MemoryCardController::class, 'update']);
+    Route::delete('/memory-cards/{memoryCard}', [MemoryCardController::class, 'destroy']);
+
+    Route::post('/cameras/{camera}/attach-card/{memoryCard}', [CameraController::class, 'attachCard']);
+    Route::post('/cameras/{camera}/detach-card/{memoryCard}', [CameraController::class, 'detachCard']);
 });
-
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
-
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-require __DIR__.'/auth.php';
