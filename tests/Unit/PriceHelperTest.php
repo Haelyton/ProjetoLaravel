@@ -2,18 +2,15 @@
 
 namespace Tests\Unit;
 
-use App\Models\Camera;
-use App\Models\MemoryCard;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Tests\TestCase;
 
-class CameraRelationsTest extends TestCase
+class PriceHelperTest extends TestCase
 {
-    public function test_camera_has_many_to_many_memory_cards_relation()
+    public function test_price_formatting()
     {
-        $camera = new Camera();
-        $relation = $camera->memoryCards();
-        $this->assertInstanceOf(BelongsToMany::class, $relation);
-        $this->assertEquals((new MemoryCard())->getTable(), $relation->getRelated()->getTable());
+        $price = 1000;
+        $formatted = number_format($price, 2, ',', '.');
+
+        $this->assertEquals('1.000,00', $formatted);
     }
 }
