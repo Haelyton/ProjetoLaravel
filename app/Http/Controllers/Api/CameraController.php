@@ -3,18 +3,36 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\CQRS\Commands\CreateCameraCommand;
+use App\CQRS\Handlers\CreateCameraHandler;
+use App\CQRS\Queries\GetCamerasQuery;
+use App\CQRS\Handlers\GetCamerasHandler;
 use App\Http\Requests\StoreCameraRequest;
 use App\Http\Requests\UpdateCameraRequest;
 use App\Models\Camera;
-use App\Models\MemoryCard;
 use Illuminate\Http\JsonResponse;
 
 class CameraController extends Controller
 {
+    private CreateCameraHandler $createHandler;
+    private GetCamerasHandler $getHandler;
+
+    public function __construct(
+        CreateCameraHandler $createHandler,
+        GetCamerasHandler $getHandler
+    ) {
+        $this->createHandler = $createHandler;
+        $this->getHandler = $getHandler;
+    }
+
     public function index(): JsonResponse
     {
-        $cameras = Camera::with('memoryCards')->paginate(10);
-        return response()->json($cameras);
+        // qualquer filtro via query string: ?marca=Canon&resolucao=24MP
+        $filters = request()->only(['marca', 'resolucao']);
+        $perPage = (int) request()->get('per_page', 10);
+
+        $result = $this->getHandler->handle(new GetCamerasQuery($filters, $perPage));
+        return response()->json($result);
     }
 
     public function show(Camera $camera): JsonResponse
@@ -25,7 +43,9 @@ class CameraController extends Controller
 
     public function store(StoreCameraRequest $request): JsonResponse
     {
-        $camera = Camera::create($request->validated());
+        $command = new CreateCameraCommand($request->validated());
+        $camera = $this->createHandler->handle($command);
+
         return response()->json($camera, 201);
     }
 
@@ -41,15 +61,5 @@ class CameraController extends Controller
         return response()->json([], 204);
     }
 
-    public function attachCard(Camera $camera, MemoryCard $memoryCard): JsonResponse
-    {
-        $camera->memoryCards()->syncWithoutDetaching([$memoryCard->id]);
-        return response()->json(['message' => 'Cartão vinculado com sucesso.']);
-    }
-
-    public function detachCard(Camera $camera, MemoryCard $memoryCard): JsonResponse
-    {
-        $camera->memoryCards()->detach($memoryCard->id);
-        return response()->json(['message' => 'Cartão desvinculado com sucesso.']);
-    }
+    // attach/detach mantém-se se quiser
 }
