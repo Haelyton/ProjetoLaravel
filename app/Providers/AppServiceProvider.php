@@ -14,7 +14,7 @@ class AppServiceProvider extends ServiceProvider
     /**
      * Register any application services.
      */
- public function register()
+public function register()
 {
     $this->app->singleton(CameraFilterContext::class, function ($app) {
         $context = new CameraFilterContext();
@@ -22,9 +22,18 @@ class AppServiceProvider extends ServiceProvider
         $context->register('resolucao', new ByResolutionStrategy());
         return $context;
     });
-     $this->app->bind(CreateCameraHandler::class, CreateCameraHandler::class);
+
+    // Handlers
+    $this->app->bind(CreateCameraHandler::class, CreateCameraHandler::class);
     $this->app->bind(GetCamerasHandler::class, GetCamerasHandler::class);
+
+    // Camera Factory
+    $this->app->bind(
+        \App\Contracts\CameraFactoryInterface::class,
+        \App\Factories\CameraFactory::class
+    );
 }
+
 
     /**
      * Bootstrap any application services.
